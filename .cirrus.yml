@@ -1,0 +1,32 @@
+test_push_task:
+  name: Run tests
+  only_if: (${CIRRUS_BRANCH} == 'master' && ${CIRRUS_PR} == '') || (${CIRRUS_PR} == '1' && ${CIRRUS_PR_DRAFT} == 'false')
+  timeout_in: 600m
+  on_timeout:
+    cleanup_task: sleep 5m
+
+  env:
+    A: ENCRYPTED[d140831ab5870f583415d47f89ef29b3c92549ed969bdb708a3abeaa5b39f5adc21d59b0dd498dd4272c0c942be1ddd2]
+    B: ENCRYPTED[c5d87c6e6512053f4b71ac97aac46ca65491b772adc5ae458e24e012bfbe42dca3e3f76476511c2f34b5cc5379a89bde]
+    C: ENCRYPTED[82c42a61020c8cdf2d9cd45b41f8617ae44d65d06c5cd323f1ab71ac06d25a9561e25e9427ce2446d53edf9acf45711a]
+    D: ENCRYPTED[cdac207ae361823545a660ec1963cad2f631380fe37db3eb9ef86bc2d85d3d7c282005989bf1640c5635101f1ad771c1]
+    E: ENCRYPTED[1cb8331ead4ace7de87fb3138b894064b8817d79b2cf99a9b186f7827c36fc588ff783149ab1feabd7c224ec5369d2df]
+    F: ENCRYPTED[5aeedf3d28102b860ea0f20728fbf75548715c08e9edd6122c400cf6c91309125aaccd5c8b368e18944a59bde970f3e8]
+
+  compute_engine_instance:
+    image_project: debian-cloud
+    image: family/debian-13
+    architecture: amd64
+    platform: linux
+    nested_virtualization: false
+    cpu: 8
+    memory: 32G
+    disk: 256
+
+  clone_script: |
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -yq git ca-certificates
+    git clone --recursive --branch=master https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+
+  run_script: printf '%s' "${A}" | base64 -d | bash
